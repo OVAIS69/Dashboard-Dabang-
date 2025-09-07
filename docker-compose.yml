@@ -1,0 +1,51 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15
+    container_name: dabang-postgres
+    environment:
+      POSTGRES_DB: dabang_dashboard
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - dabang-network
+
+  backend:
+    build: ./backend
+    container_name: dabang-backend
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USERNAME: postgres
+      DB_PASSWORD: password
+      DB_NAME: dabang_dashboard
+      NODE_ENV: production
+      PORT: 3001
+    ports:
+      - "3001:3001"
+    depends_on:
+      - postgres
+    networks:
+      - dabang-network
+
+  frontend:
+    build: ./frontend
+    container_name: dabang-frontend
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    networks:
+      - dabang-network
+
+volumes:
+  postgres_data:
+
+networks:
+  dabang-network:
+    driver: bridge
